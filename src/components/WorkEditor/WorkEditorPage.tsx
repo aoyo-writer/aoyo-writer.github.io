@@ -63,6 +63,24 @@ export default function WorkEditorPage() {
   const [exportAnchor, setExportAnchor] = useState<HTMLElement | null>(null);
   const [pinnedPdf, setPinnedPdf] = useState<{ url: string; filename: string } | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const editorRef = useRef<ReturnType<typeof useEditor>>(null);
+
+  // Flush any pending debounced save immediately
+  const flushSave = useCallback(() => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    const ed = editorRef.current;
+    if (ed && !ed.isDestroyed) {
+      const json = JSON.stringify(ed.getJSON());
+      const wc = countWords(ed.getText());
+      if (activeChapterId && workId) {
+        updateChapter(activeChapterId, { content: json, wordCount: wc });
+        recalcWorkWordCount(workId);
+      }
+    }
+  }, [activeChapterId, workId]);
 
   // Set active chapter when chapters load
   useEffect(() => {
@@ -90,6 +108,22 @@ export default function WorkEditorPage() {
     return () => document.removeEventListener("open-source-ref-picker", handler);
   }, []);
 
+  // Warn before closing tab with unsaved changes
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (saveStatus === "unsaved") {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [saveStatus]);
+
+  // Flush pending save on unmount (navigation away from editor)
+  useEffect(() => {
+    return () => flushSave();
+  }, [flushSave]);
+
   const activeChapter = chapters?.find(
     (ch: Chapter) => ch.id === activeChapterId,
   );
@@ -114,6 +148,9 @@ export default function WorkEditorPage() {
       content: activeChapter
         ? JSON.parse(activeChapter.content)
         : { type: "doc", content: [{ type: "paragraph" }] },
+      onCreate: ({ editor: ed }) => {
+        editorRef.current = ed;
+      },
       onUpdate: ({ editor: ed }) => {
         setSaveStatus("unsaved");
         // Debounced autosave
@@ -123,6 +160,10 @@ export default function WorkEditorPage() {
           const wc = countWords(ed.getText());
           handleSave(json, wc);
         }, 1500);
+      },
+      onBeforeCreate: () => {
+        // Flush pending save from previous chapter before editor re-creates
+        flushSave();
       },
     },
     [activeChapterId],
@@ -458,7 +499,7 @@ export default function WorkEditorPage() {
             <Button
               key={ch.id}
               size="small"
-              onClick={() => setActiveChapterId(ch.id!)}
+              onClick={() => { flushSave(); setActiveChapterId(ch.id!); }}
               sx={{
                 fontSize: "0.8rem",
                 textTransform: "none",
