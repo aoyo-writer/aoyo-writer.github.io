@@ -36,7 +36,6 @@
     "@codemirror/legacy-modes": "^6.5.2",
     "@codemirror/state": "^6.6.0",
     "@codemirror/view": "^6.40.0",
-    "@docen/import-docx": "^0.0.15",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.9",

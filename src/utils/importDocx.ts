@@ -15,16 +15,7 @@ export async function importDocx(file: File): Promise<DocxImportResult> {
   const arrayBuffer = await file.arrayBuffer();
   const warnings: string[] = [];
 
-  // Try @docen/import-docx first (outputs TipTap JSON directly)
-  try {
-    const { parseDOCX } = await import("@docen/import-docx");
-    const json = await parseDOCX(new Uint8Array(arrayBuffer));
-    return { json, warnings: [] };
-  } catch (e) {
-    warnings.push(`@docen/import-docx failed (${e}), falling back to mammoth`);
-  }
-
-  // Fallback: mammoth.js (outputs HTML)
+  // mammoth.js (outputs HTML)
   const mammoth = await import("mammoth");
   const result = await mammoth.default.convertToHtml(
     { arrayBuffer },
