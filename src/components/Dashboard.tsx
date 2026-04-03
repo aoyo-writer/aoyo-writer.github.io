@@ -1,12 +1,31 @@
+import { useState, useMemo } from "react";
 import { Box, Typography, Button, Link as MuiLink } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import { useRecentWorks, usePinnedWorks, useWorkStats } from "../db/useWorks";
+import { useRecentWorks, usePinnedWorks, useDeadlineWorks, useWorkStats } from "../db/useWorks";
+import { getDeadlineStatus } from "../types";
+
+type SortMode = "recent" | "deadline";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const recentWorks = useRecentWorks(8);
   const pinnedWorks = usePinnedWorks();
+  const deadlineWorks = useDeadlineWorks();
   const stats = useWorkStats();
+  const [sortMode, setSortMode] = useState<SortMode>("recent");
+
+  const sortedWorks = useMemo(() => {
+    if (!recentWorks) return undefined;
+    if (sortMode === "deadline") {
+      return [...recentWorks].sort((a, b) => {
+        if (!a.deadline && !b.deadline) return 0;
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        return a.deadline.localeCompare(b.deadline);
+      });
+    }
+    return recentWorks;
+  }, [recentWorks, sortMode]);
 
   const lastWork = recentWorks?.[0];
 
@@ -77,48 +96,43 @@ export default function Dashboard() {
       >
         {/* Main column */}
         <Box sx={{ flex: 1 }}>
-          {/* Recent works */}
-          <Box sx={{ mb: 3 }}>
-            <Typography
-              component="h2"
-              sx={{
-                fontFamily: "Georgia, serif",
-                fontSize: "1.286em",
-                fontWeight: "normal",
-                mb: 1,
-                borderBottom: "1px solid #ddd",
-                pb: 0.5,
-              }}
-            >
-              Recent Works
-            </Typography>
-            {!recentWorks || recentWorks.length === 0 ? (
-              <Typography sx={{ fontSize: "0.9rem", color: "#666", py: 2 }}>
-                No works yet.{" "}
-                <Link
-                  to="/work/new"
-                  style={{ color: "#900", textDecoration: "none" }}
-                >
-                  Create your first work
-                </Link>
-                .
+          {/* Upcoming Deadlines */}
+          {deadlineWorks && deadlineWorks.length > 0 && (
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                component="h2"
+                sx={{
+                  fontFamily: "Georgia, serif",
+                  fontSize: "1.286em",
+                  fontWeight: "normal",
+                  mb: 1,
+                  borderBottom: "1px solid #ddd",
+                  pb: 0.5,
+                }}
+              >
+                Deadlines
               </Typography>
-            ) : (
               <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0 }}>
-                {recentWorks.map((work) => (
-                  <Box
-                    component="li"
-                    key={work.id}
-                    sx={{
-                      borderBottom: "1px solid #eee",
-                      py: 0.75,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "baseline",
-                      "&:last-child": { borderBottom: "none" },
-                    }}
-                  >
-                    <Box>
+                {deadlineWorks.map((work) => {
+                  const status = getDeadlineStatus(work);
+                  const deadline = new Date(work.deadline!);
+                  const now = new Date();
+                  const diffDays = Math.ceil(
+                    (deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+                  );
+                  return (
+                    <Box
+                      component="li"
+                      key={work.id}
+                      sx={{
+                        borderBottom: "1px solid #eee",
+                        py: 0.75,
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "baseline",
+                        "&:last-child": { borderBottom: "none" },
+                      }}
+                    >
                       <Link
                         to={`/work/${work.id}`}
                         style={{ color: "#900", textDecoration: "none" }}
@@ -134,29 +148,164 @@ export default function Dashboard() {
                           {work.title}
                         </Typography>
                       </Link>
-                      {work.subjects.length > 0 && (
-                        <Typography
-                          component="span"
-                          sx={{ fontSize: "0.8rem", color: "#666", ml: 1 }}
-                        >
-                          {work.subjects.join(", ")}
-                        </Typography>
-                      )}
+                      <Box
+                        sx={{
+                          fontSize: "0.8rem",
+                          flexShrink: 0,
+                          ml: 1,
+                          color:
+                            status === "overdue"
+                              ? "#990000"
+                              : status === "upcoming"
+                                ? "#b8860b"
+                                : "#666",
+                          fontWeight:
+                            status === "overdue" ? "bold" : "normal",
+                        }}
+                      >
+                        {deadline.toLocaleDateString()}
+                        {" — "}
+                        {diffDays < 0
+                          ? `${Math.abs(diffDays)}d overdue`
+                          : diffDays === 0
+                            ? "due today"
+                            : `${diffDays}d left`}
+                      </Box>
                     </Box>
+                  );
+                })}
+              </Box>
+            </Box>
+          )}
+
+          {/* Recent works */}
+          <Box sx={{ mb: 3 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                mb: 1,
+                borderBottom: "1px solid #ddd",
+                pb: 0.5,
+              }}
+            >
+              <Typography
+                component="h2"
+                sx={{
+                  fontFamily: "Georgia, serif",
+                  fontSize: "1.286em",
+                  fontWeight: "normal",
+                }}
+              >
+                Recent Works
+              </Typography>
+              <Box
+                component="select"
+                value={sortMode}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setSortMode(e.target.value as SortMode)
+                }
+                sx={{
+                  border: "1px solid #ccc",
+                  borderRadius: "0.25em",
+                  fontSize: "0.75rem",
+                  p: "0.15em 0.4em",
+                  backgroundColor: "#fff",
+                  color: "#666",
+                }}
+              >
+                <option value="recent">Last Opened</option>
+                <option value="deadline">Deadline</option>
+              </Box>
+            </Box>
+            {!sortedWorks || sortedWorks.length === 0 ? (
+              <Typography sx={{ fontSize: "0.9rem", color: "#666", py: 2 }}>
+                No works yet.{" "}
+                <Link
+                  to="/work/new"
+                  style={{ color: "#900", textDecoration: "none" }}
+                >
+                  Create your first work
+                </Link>
+                .
+              </Typography>
+            ) : (
+              <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0 }}>
+                {sortedWorks.map((work) => {
+                  const dlStatus = work.deadline
+                    ? getDeadlineStatus(work)
+                    : "none";
+                  return (
                     <Box
+                      component="li"
+                      key={work.id}
                       sx={{
+                        borderBottom: "1px solid #eee",
+                        py: 0.75,
                         display: "flex",
-                        gap: 1.5,
-                        fontSize: "0.8rem",
-                        color: "#666",
-                        flexShrink: 0,
+                        justifyContent: "space-between",
+                        alignItems: "baseline",
+                        "&:last-child": { borderBottom: "none" },
                       }}
                     >
-                      <span>{work.wordCount.toLocaleString()} words</span>
-                      <span>{work.status}</span>
+                      <Box>
+                        <Link
+                          to={`/work/${work.id}`}
+                          style={{ color: "#900", textDecoration: "none" }}
+                        >
+                          <Typography
+                            component="span"
+                            sx={{
+                              fontFamily: "Georgia, serif",
+                              fontSize: "1em",
+                              "&:hover": { textDecoration: "underline" },
+                            }}
+                          >
+                            {work.title}
+                          </Typography>
+                        </Link>
+                        {work.subjects.length > 0 && (
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: "0.8rem", color: "#666", ml: 1 }}
+                          >
+                            {work.subjects.join(", ")}
+                          </Typography>
+                        )}
+                      </Box>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 1.5,
+                          fontSize: "0.8rem",
+                          color: "#666",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {work.deadline && (
+                          <Box
+                            component="span"
+                            sx={{
+                              color:
+                                dlStatus === "overdue"
+                                  ? "#990000"
+                                  : dlStatus === "upcoming"
+                                    ? "#b8860b"
+                                    : "#666",
+                              fontWeight:
+                                dlStatus === "overdue" ? "bold" : "normal",
+                            }}
+                          >
+                            {new Date(work.deadline).toLocaleDateString()}
+                          </Box>
+                        )}
+                        <span>{work.wordCount.toLocaleString()} words</span>
+                        <span>{work.status}</span>
+                      </Box>
                     </Box>
-                  </Box>
-                ))}
+                  );
+                })}
               </Box>
             )}
           </Box>

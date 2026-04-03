@@ -27,6 +27,7 @@ const completionOptions: CompletionStatus[] = ["Complete", "Work in Progress"];
 const sortOptions = [
   { value: "updatedAt", label: "Last Modified" },
   { value: "createdAt", label: "Date Created" },
+  { value: "deadline", label: "Deadline" },
   { value: "wordCount", label: "Word Count" },
   { value: "title", label: "Title A-Z" },
 ];

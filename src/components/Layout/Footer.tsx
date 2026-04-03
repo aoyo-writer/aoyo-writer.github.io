@@ -71,6 +71,7 @@ export default function Footer() {
                   fontSize: "0.85rem",
                   textDecoration: "none",
                   "&:hover": { textDecoration: "underline" },
+                  "&:visited": { color: "#fff" },
                 }}
               >
                 GitHub Repo
@@ -86,6 +87,7 @@ export default function Footer() {
                   fontSize: "0.85rem",
                   textDecoration: "none",
                   "&:hover": { textDecoration: "underline" },
+                  "&:visited": { color: "#fff" },
                 }}
               >
                 Request a Feature / Report a Bug
@@ -101,6 +103,7 @@ export default function Footer() {
                   fontSize: "0.85rem",
                   textDecoration: "none",
                   "&:hover": { textDecoration: "underline" },
+                  "&:visited": { color: "#fff" },
                 }}
               >
                 MIT License
@@ -130,7 +133,7 @@ export default function Footer() {
               href="https://archiveofourown.org"
               target="_blank"
               rel="noopener"
-              sx={{ color: "#ffcccc", textDecoration: "underline" }}
+              sx={{ color: "#ffcccc", textDecoration: "underline", "&:visited": { color: "#ffcccc" } }}
             >
               AO3
             </MuiLink>

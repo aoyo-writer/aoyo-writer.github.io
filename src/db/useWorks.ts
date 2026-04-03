@@ -131,6 +131,15 @@ export function usePinnedWorks(): Work[] | undefined {
   return rows?.map(deserializeWork);
 }
 
+export function useDeadlineWorks(): Work[] | undefined {
+  const rows = useSqlQuery<Row>(
+    (sql) =>
+      sql`SELECT * FROM works WHERE deadline IS NOT NULL AND completionStatus != 'Complete' ORDER BY deadline ASC`,
+    [],
+  );
+  return rows?.map(deserializeWork);
+}
+
 export function useWorksByStatus(status: WorkStatus): Work[] | undefined {
   const rows = useSqlQuery<Row>(
     (sql) => sql`SELECT * FROM works WHERE status = ${status}`,

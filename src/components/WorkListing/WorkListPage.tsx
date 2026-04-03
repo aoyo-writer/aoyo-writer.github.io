@@ -66,6 +66,11 @@ export default function WorkListPage() {
       switch (filters.sortBy) {
         case "createdAt":
           return b.createdAt.localeCompare(a.createdAt);
+        case "deadline":
+          if (!a.deadline && !b.deadline) return 0;
+          if (!a.deadline) return 1;
+          if (!b.deadline) return -1;
+          return a.deadline.localeCompare(b.deadline);
         case "wordCount":
           return b.wordCount - a.wordCount;
         case "title":
