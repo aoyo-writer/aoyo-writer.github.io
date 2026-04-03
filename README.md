@@ -1,21 +1,26 @@
 # AOYO — Archive of Your Own
 
-A local-first writing application inspired by [Archive of Our Own](https://archiveofourown.org). Built for academic and creative writing with citations, math typesetting, and multi-format export. No server, no accounts — your data stays in your browser.
+So, this is a tool thingy that I wrote, cus my friend wants to write their essays in AO3 font, so, I made this silly lil site.
 
-## Features
+It's all local — there won't be any sync, and all your data will be on your machine. At least, it won't be shared to me, idk what your browser or ISP will do, but yeah.
 
-- **Rich text editor** — TipTap-based WYSIWYG with full formatting toolbar (bold, italic, headings, lists, tables, images, code blocks)
-- **Academic writing** — KaTeX math equations (inline & block), bibliography management, citations with APA 7th and OSCOLA styles
-- **Research library** — Search papers via OpenAlex, manage PDFs, track source references in your text
-- **Multi-format export** — Markdown, HTML, LaTeX, Word (.docx), PDF (print-to-PDF)
-- **Word import** — Import .docx files directly into the editor
-- **Three editor views** — Edit (WYSIWYG), LaTeX source, and reading preview
-- **Local-first storage** — SQLite via OPFS (sqlocal) — all data lives in your browser
-- **AO3-inspired UI** — Tagging system, work metadata, filtering, familiar layout and typography
-- **Save points** — Manual snapshots with history, restore, and auto-pruning (max 50 per chapter)
-- **Backup & restore** — Full database backup/restore from the tools menu
+I've also included a few handy tools for writing academic essays, so, feel free to use or not use. The design is LaTeX-centric, but you can use the Rich Text editor as well.
 
-## Quick Start
+**Live site:** [aoyo-writer.github.io](https://aoyo-writer.github.io)
+
+## What's in here
+
+- Rich text editor with AO3-style formatting (or use the LaTeX source view if that's your thing)
+- KaTeX math equations — inline and block
+- Bibliography management with citations (APA 7th & OSCOLA)
+- Paper search via OpenAlex, PDF management, source tracking
+- Export to Markdown, HTML, LaTeX, Word (.docx), PDF
+- Import from .docx
+- Save points with history and restore
+- All data stored locally in your browser (SQLite via OPFS)
+- AO3-inspired UI — tags, work metadata, filtering, the whole vibe
+
+## Getting started (for devs)
 
 **Prerequisites:** [Node.js](https://nodejs.org/) 18+ or [Bun](https://bun.sh/)
 
@@ -28,11 +33,16 @@ bun run dev    # or: npm run dev
 
 Open [http://localhost:5173](http://localhost:5173)
 
-## Tech Stack
+On NixOS:
+```bash
+nix-shell -p bun --run "bun run dev"
+```
 
-[React 19](https://react.dev) · [TypeScript](https://www.typescriptlang.org) · [Vite 8](https://vite.dev) · [MUI 7](https://mui.com) · [TipTap 3](https://tiptap.dev) · [SQLite (sqlocal)](https://github.com/nicksenger/sqlocal) · [KaTeX](https://katex.org) · [CodeMirror 6](https://codemirror.net)
+## Tech stack
 
-## Project Structure
+[React 19](https://react.dev) · [TypeScript](https://www.typescriptlang.org) · [Vite 8](https://vite.dev) · [MUI 7](https://mui.com) · [TipTap 3](https://tiptap.dev) · [SQLite (sqlocal)](https://github.com/DallasHoff/sqlocal) · [KaTeX](https://katex.org) · [CodeMirror 6](https://codemirror.net)
+
+## Project structure
 
 ```
 src/
@@ -60,50 +70,32 @@ bun run lint      # Run ESLint
 bun run preview   # Preview production build locally
 ```
 
-### NixOS
+### Architecture notes
 
-All commands need to run through nix-shell:
-
-```bash
-nix-shell -p bun --run "bun run dev"
-```
-
-### Architecture Notes
-
-- **Database**: SQLite via [sqlocal](https://github.com/nicksenger/sqlocal) using the OPFS backend. Schema is created in `src/db/sqlite.ts` via `onInit`. JSON columns for arrays, INTEGER for booleans, BLOB for PDFs. Foreign keys use `ON DELETE CASCADE`.
+- **Database**: SQLite via [sqlocal](https://github.com/DallasHoff/sqlocal) using the OPFS backend. Schema is created in `src/db/sqlite.ts` via `onInit`. JSON columns for arrays, INTEGER for booleans, BLOB for PDFs. Foreign keys use `ON DELETE CASCADE`.
 - **Editor extensions**: All TipTap extensions are registered in `src/extensions/index.ts`. Custom extensions include inline math, block math, citations, and source reference marks.
-- **COEP headers**: Required by sqlocal for SharedArrayBuffer access. The sqlocal Vite plugin handles this automatically in dev. For production deployment, your host must serve pages with `Cross-Origin-Embedder-Policy: require-corp` and `Cross-Origin-Opener-Policy: same-origin` headers.
+- **COEP headers**: Required by sqlocal for SharedArrayBuffer access. The sqlocal Vite plugin handles this in dev. For production, we use [mini-coi](https://github.com/WebReflection/mini-coi) to inject headers via service worker.
 - **Citation styles**: APA 7th and OSCOLA are implemented. Style is set per-work and propagated via React Context through TipTap NodeViews.
 - **External APIs**: Paper search uses [OpenAlex](https://openalex.org) (no API key required). DOI verification uses [CrossRef](https://www.crossref.org) (no API key required).
 
 ## Deployment
 
-AOYO is a static site. Build with `bun run build` and deploy the `dist/` directory to any static host.
-
-### GitHub Pages
-
-This repo includes a GitHub Actions workflow that automatically deploys to GitHub Pages on push to `main`. The site is available at [https://aoyo-writer.github.io](https://aoyo-writer.github.io).
-
-### COEP Headers
-
-sqlocal requires specific HTTP headers for SharedArrayBuffer. Most static hosts handle this differently:
-
-- **GitHub Pages** — Use the sqlocal service worker shim (included in build)
-- **Cloudflare Pages** — Add a `_headers` file
-- **Vercel** — Add headers in `vercel.json`
-- **Nginx** — Add `add_header` directives
-
-See [sqlocal deployment docs](https://github.com/nicksenger/sqlocal#deployment) for details.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style guidelines, and how to submit changes.
+AOYO is a static site. Build with `bun run build` and deploy the `dist/` directory to any static host. This repo includes a GitHub Actions workflow that auto-deploys to GitHub Pages on push to `main`.
 
 ## Acknowledgments
 
-- Design inspired by [Archive of Our Own](https://archiveofourown.org) (AO3). **Not affiliated with the Organization for Transformative Works.**
-- Built with [TipTap](https://tiptap.dev), [MUI](https://mui.com), [sqlocal](https://github.com/nicksenger/sqlocal), [KaTeX](https://katex.org), and many other open-source projects.
+Thank you to all the open-sourced tools that allowed me to whip this thingy up, honestly, I can't imagine building all the individual tools and stuff myself.
+
+Design inspired by [Archive of Our Own](https://archiveofourown.org) (AO3). Not affiliated with the Organization for Transformative Works.
+
+## Contributing
+
+If you want to contribute, check out [CONTRIBUTING.md](CONTRIBUTING.md). I'm not the best repo maintainer (I will learn to be if there's enough need for it I suppose), but yeah.
+
+If you want any features, [open an issue on GitHub](https://github.com/aoyo-writer/aoyo-writer.github.io/issues) — I'll, maybe look through it.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) — hosting this literally costs me nothing, so, feel free to use it however you want, fork it, whatever~
+
+to muh friends :3
