@@ -20,8 +20,8 @@ A local-first writing application inspired by [Archive of Our Own](https://archi
 **Prerequisites:** [Node.js](https://nodejs.org/) 18+ or [Bun](https://bun.sh/)
 
 ```bash
-git clone https://github.com/aoyo-writer/aoyo.git
-cd aoyo
+git clone https://github.com/aoyo-writer/aoyo-writer.github.io.git
+cd aoyo-writer.github.io
 bun install    # or: npm install
 bun run dev    # or: npm run dev
 ```
@@ -82,7 +82,7 @@ AOYO is a static site. Build with `bun run build` and deploy the `dist/` directo
 
 ### GitHub Pages
 
-This repo includes a GitHub Actions workflow that automatically deploys to GitHub Pages on push to `main`. The site is available at [https://aoyo-writer.github.io/aoyo](https://aoyo-writer.github.io/aoyo).
+This repo includes a GitHub Actions workflow that automatically deploys to GitHub Pages on push to `main`. The site is available at [https://aoyo-writer.github.io](https://aoyo-writer.github.io).
 
 ### COEP Headers
 

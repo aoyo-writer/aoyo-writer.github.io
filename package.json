@@ -5,13 +5,13 @@
   "type": "module",
   "author": "aoyo-writer",
   "license": "MIT",
-  "homepage": "https://aoyo-writer.github.io/aoyo",
+  "homepage": "https://aoyo-writer.github.io",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aoyo-writer/aoyo.git"
+    "url": "https://github.com/aoyo-writer/aoyo-writer.github.io.git"
   },
   "bugs": {
-    "url": "https://github.com/aoyo-writer/aoyo/issues"
+    "url": "https://github.com/aoyo-writer/aoyo-writer.github.io/issues"
   },
   "keywords": [
     "writing",

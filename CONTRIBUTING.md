@@ -12,8 +12,8 @@ Thanks for your interest in contributing! This guide covers everything you need 
 ### Getting Started
 
 ```bash
-git clone https://github.com/aoyo-writer/aoyo.git
-cd aoyo
+git clone https://github.com/aoyo-writer/aoyo-writer.github.io.git
+cd aoyo-writer.github.io
 bun install
 bun run dev
 ```
@@ -78,7 +78,7 @@ These are common pitfalls that have caught us before:
 
 ## Reporting Issues
 
-- Use [GitHub Issues](https://github.com/aoyo-writer/aoyo/issues)
+- Use [GitHub Issues](https://github.com/aoyo-writer/aoyo-writer.github.io/issues)
 - Include browser version and steps to reproduce
 - Screenshots are helpful for UI issues
 

@@ -4,6 +4,6 @@ import sqlocal from 'sqlocal/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: process.env.GITHUB_PAGES ? '/aoyo/' : '/',
+  base: '/',
   plugins: [react(), sqlocal()],
 })
