@@ -130,7 +130,7 @@ export default function Footer() {
               href="https://archiveofourown.org"
               target="_blank"
               rel="noopener"
-              sx={{ color: "#fff" }}
+              sx={{ color: "#ffcccc", textDecoration: "underline" }}
             >
               AO3
             </MuiLink>
